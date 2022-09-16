@@ -82,7 +82,7 @@ services:
       - INSECURE_COOKIE=true # Example assumes no https, do not use in production
     labels:
       - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
-      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User"
+      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User,X-Oidc-Token"
       - "traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181"
 
   whoami:
@@ -90,6 +90,21 @@ services:
     labels:
       - "traefik.http.routers.whoami.rule=Host(`whoami.mycompany.com`)"
       - "traefik.http.routers.whoami.middlewares=traefik-forward-auth"
+```
+traefik.toml:
+
+```toml
+[entryPoints]
+    [entryPoints.http]
+    address = ":80"
+
+    [entryPoints.http.auth.forward]
+    address = "http://traefik-forward-auth:4181"
+    authResponseHeaders = ["X-Forwarded-User", "X-Oidc-Token"]
+
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+network = "traefik"
 ```
 
 #### Advanced:
@@ -375,86 +390,7 @@ Note, if you pass both `whitelist` and `domain`, then the default behaviour is f
 
 ### Forwarded Headers
 
-The authenticated user is set in the `X-Forwarded-User` header, to pass this on add this to the `authResponseHeaders` config option in traefik, as shown below in the [Applying Authentication](#applying-authentication) section.
-
-### Applying Authentication
-
-Authentication can be applied in a variety of ways, either globally across all requests, or selectively to specific containers/ingresses.
-
-#### Global Authentication
-
-This can be achieved by enabling forward authentication for an entire entrypoint, for example, with http only:
-
-```ini
---entryPoints.http.address=:80
---entrypoints.http.http.middlewares=traefik-forward-auth # "default-traefik-forward-auth" on kubernetes
-```
-
-Or https:
-
-```ini
---entryPoints.http.address=:80
---entryPoints.http.http.redirections.entryPoint.to=https
---entryPoints.http.http.redirections.entryPoint.scheme=https
---entryPoints.https.address=:443
---entrypoints.https.http.middlewares=traefik-forward-auth # "default-traefik-forward-auth" on kubernetes
-```
-
-Note: Traefik prepends the namespace to the name of middleware defined via a kubernetes resource. This is handled automatically when referencing the middleware from another resource in the same namespace (so the namespace does not need to be prepended when referenced). However the full name, including the namespace, must be used when referenced from static configuration (e.g. command arguments or config file), hence you must prepend the namespace to your traefik-forward-auth middleware reference, as shown in the comments above (e.g. `default-traefik-forward-auth` if your middleware is named `traefik-forward-auth` and is defined in the `default` namespace).
-
-#### Selective Ingress Authentication in Kubernetes
-
-If you choose not to enable forward authentication for a specific entrypoint, you can apply the middleware to selected ingressroutes:
-
-```yaml
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: whoami
-  labels:
-    app: whoami
-spec:
-  entryPoints:
-    - http
-  routes:
-  - match: Host(`whoami.example.com`)
-    kind: Rule
-    services:
-      - name: whoami
-        port: 80
-    middlewares:
-      - name: traefik-forward-auth
-```
-
-See the examples directory for more examples.
-
-#### Selective Container Authentication in Swarm
-
-You can apply labels to selected containers:
-
-```yaml
-whoami:
-  image: containous/whoami
-  labels:
-    - "traefik.http.routers.whoami.rule=Host(`whoami.example.com`)"
-    - "traefik.http.routers.whoami.middlewares=traefik-forward-auth"
-```
-
-See the examples directory for more examples.
-
-#### Rules Based Authentication
-
-You can also leverage the `rules` config to selectively apply authentication via traefik-forward-auth. For example if you enabled global authentication by enabling forward authentication for an entire entrypoint, you can still exclude some patterns from requiring authentication:
-
-```ini
-# Allow requests to 'dash.example.com'
-rule.1.action = allow
-rule.1.rule = Host(`dash.example.com`)
-
-# Allow requests to `app.example.com/public`
-rule.two.action = allow
-rule.two.rule = Host(`app.example.com`) && Path(`/public`)
-```
+The authenticated user is set in the `X-Forwarded-User` header, to pass this on add this to the `authResponseHeaders` config option in traefik, as shown [here](https://github.com/thomseddon/traefik-forward-auth/blob/master/examples/docker-compose-dev.yml).
 
 ### Operation Modes
 

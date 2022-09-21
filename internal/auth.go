@@ -18,7 +18,7 @@ import (
 // Request Validation
 
 // ValidateCookie verifies that a cookie matches the expected format of:
-// Cookie = hash(secret, cookie domain, email, expires)|expires|email
+// Cookie = hash(secret, cookie domain, email, expires)|expires|email|token
 func ValidateCookie(r *http.Request, c *http.Cookie) (string, string, error ) {
 	parts := strings.Split(c.Value, "|")
 

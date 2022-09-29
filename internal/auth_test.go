@@ -24,7 +24,7 @@ func TestAuthValidateCookie(t *testing.T) {
 
 	// Should require 3 parts
 	c.Value = ""
-	_, _, err  := ValidateCookie(r, c)
+	_, _, err := ValidateCookie(r, c)
 	if assert.Error(err) {
 		assert.Equal("Invalid cookie format", err.Error())
 	}

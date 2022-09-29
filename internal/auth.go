@@ -19,7 +19,7 @@ import (
 
 // ValidateCookie verifies that a cookie matches the expected format of:
 // Cookie = hash(secret, cookie domain, email, expires)|expires|email|token
-func ValidateCookie(r *http.Request, c *http.Cookie) (string, string, error ) {
+func ValidateCookie(r *http.Request, c *http.Cookie) (string, string, error) {
 	parts := strings.Split(c.Value, "|")
 
 	if len(parts) != 4 {
@@ -53,7 +53,7 @@ func ValidateCookie(r *http.Request, c *http.Cookie) (string, string, error ) {
 	}
 
 	// Looks valid
-	return parts[2], parts[3], nil 
+	return parts[2], parts[3], nil
 }
 
 // ValidateEmail checks if the given email address matches either a whitelisted

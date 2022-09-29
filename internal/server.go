@@ -192,7 +192,7 @@ func (s *Server) AuthCallbackHandler() http.HandlerFunc {
 			"provider": providerName,
 			"redirect": redirect,
 			"user":     user.Email,
-			"token":	token,
+			"token":    token,
 		}).Info("Successfully generated auth cookie, redirecting user.")
 
 		// Redirect

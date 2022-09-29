@@ -82,7 +82,7 @@ services:
       - INSECURE_COOKIE=true # Example assumes no https, do not use in production
     labels:
       - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
-      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User,X-Oidc-Token"
+      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User,X-Forwarded-Access-Token"
       - "traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181"
 
   whoami:
@@ -100,7 +100,7 @@ traefik.toml:
 
     [entryPoints.http.auth.forward]
     address = "http://traefik-forward-auth:4181"
-    authResponseHeaders = ["X-Forwarded-User", "X-Oidc-Token"]
+    authResponseHeaders = ["X-Forwarded-User", "X-Forwarded-Access-Token"]
 
 [docker]
 endpoint = "unix:///var/run/docker.sock"
